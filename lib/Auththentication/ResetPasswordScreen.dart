@@ -15,6 +15,13 @@ class Resetpasswordscreen extends StatefulWidget {
 class _ResetpasswordscreenState extends State<Resetpasswordscreen> {
   bool _isLoading = false;
   final _resetPasswordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _resetPasswordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,8 +81,8 @@ class _ResetpasswordscreenState extends State<Resetpasswordscreen> {
                 hintText: "Email address",
                 maxLines: 1,
                 readOnly: false,
-                filled: null,
-                fillColor: null,
+                filled: true,
+                fillColor: Colors.white,
                 label: null),
             const SizedBox(
               height: 20,
@@ -87,10 +94,18 @@ class _ResetpasswordscreenState extends State<Resetpasswordscreen> {
                 onPressed: _isLoading
                     ? null // Jab loading ho raha ho to button disable ho jaye
                     : () async {
-                        if (_resetPasswordController.text.isEmpty) {
+                        if (_resetPasswordController.text.trim().isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                                 content: Text("Please enter your email")),
+                          );
+                          return;
+                        }
+                        if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(
+                            _resetPasswordController.text.trim())) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text("Please enter a valid email address")),
                           );
                           return;
                         }

@@ -39,7 +39,7 @@ class AccountController extends GetxController {
         final data = UserModel.fromJson(snap.data()!);
         nameController.text = data.name ?? '';
         emailController.text = data.email ?? '';
-        phoneController.text = data.phoneNum!.toInt() as String;
+        phoneController.text = data.phoneNum?.toString() ?? '';
         companyController.text = data.compnyName ?? '';
       }
     } catch (e) {

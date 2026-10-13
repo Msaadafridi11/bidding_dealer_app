@@ -17,8 +17,7 @@ class Custemtextformfield extends StatelessWidget {
       this.contentPadding,
       this.hintStyle,
       required this.label,
-      
-      
+      this.obscureText = false,
       });
 
   //we takes variables for textformfield
@@ -36,6 +35,7 @@ class Custemtextformfield extends StatelessWidget {
   final TextStyle? hintStyle;
   final Widget? label;
   final Widget? suffixIcon;
+  final bool obscureText;
   
 
   @override
@@ -44,7 +44,10 @@ class Custemtextformfield extends StatelessWidget {
       onChanged: onchanged,
       controller: controller,
       onTap: onTap,
-      readOnly: readOnly,     
+      readOnly: readOnly,
+      obscureText: obscureText,
+      // When obscureText is true, maxLines must be 1
+      maxLines: obscureText ? 1 : maxLines,
       decoration: InputDecoration(
           contentPadding: contentPadding,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(5)),
@@ -55,11 +58,9 @@ class Custemtextformfield extends StatelessWidget {
           hintStyle: hintStyle,
           fillColor: fillColor, 
           label: label, 
-          
-
           ),
       validator: validator,
-      maxLines: maxLines,
     );
   }
 }
+

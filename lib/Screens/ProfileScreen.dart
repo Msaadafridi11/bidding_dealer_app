@@ -31,8 +31,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Current user ki ID
-    final String uid = FirebaseAuth.instance.currentUser!.uid;
+    // Null-safe: if somehow called after logout, show a safe loader
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      return const Scaffold(
+          body: Center(child: CircularProgressIndicator()));
+    }
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -43,8 +47,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          final userModel =
-              UserModel.fromJson(snapshot.data!.data() as Map<String, dynamic>);
+          // Null-safe: handle missing or null data
+          final rawData = snapshot.data?.data();
+          if (rawData == null) {
+            return const Center(child: Text('Profile data not found.'));
+          }
+          // ignore: unnecessary_cast
+          final userModel = UserModel.fromJson(rawData as Map<String, dynamic>);
 
           bool isVerified = userModel.isVerified ?? false;
 

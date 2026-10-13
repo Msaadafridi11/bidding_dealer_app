@@ -1,8 +1,12 @@
+import 'package:bidding_user/Auththentication/LoginScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
 class SomethingWentWrongScreen extends StatelessWidget {
   final String errorMessage;
-  const SomethingWentWrongScreen({super.key, this.errorMessage = "Something went wrong!"});
+  const SomethingWentWrongScreen(
+      {super.key, this.errorMessage = 'Something went wrong!'});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +21,7 @@ class SomethingWentWrongScreen extends StatelessWidget {
               const Icon(Icons.wifi_off_rounded, size: 80, color: Colors.redAccent),
               const SizedBox(height: 20),
               const Text(
-                "Connection Issue!",
+                'Connection Issue!',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
@@ -28,13 +32,13 @@ class SomethingWentWrongScreen extends StatelessWidget {
               ),
               const SizedBox(height: 30),
               ElevatedButton.icon(
-                onPressed: () {
-                  // App ko reload karne ke liye simply logout karwa sakte hain ya restart
-                  FirebaseAuth.instance.signOut();
-
+                onPressed: () async {
+                  await FirebaseAuth.instance.signOut();
+                  Get.offAll(() => const Loginscreen(),
+                      routeName: '/Loginscreen');
                 },
                 icon: const Icon(Icons.refresh),
-                label: const Text("Try Again"),
+                label: const Text('Try Again / Logout'),
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
               ),
             ],

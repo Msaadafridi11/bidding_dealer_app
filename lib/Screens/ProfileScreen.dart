@@ -47,15 +47,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
+          if (snapshot.hasError) {
+            return const Center(child: Text('Unable to load profile.'));
+          }
           // Null-safe: handle missing or null data
           final rawData = snapshot.data?.data();
           if (rawData == null) {
             return const Center(child: Text('Profile data not found.'));
           }
-          // ignore: unnecessary_cast
-          final userModel = UserModel.fromJson(rawData as Map<String, dynamic>);
 
-          bool isVerified = userModel.isVerified ?? false;
+          UserModel userModel;
+          try {
+            userModel = UserModel.fromJson(rawData);
+          } catch (_) {
+            userModel = UserModel(
+              name: rawData['name'] as String?,
+              email: rawData['email'] as String?,
+              isVerified: rawData['isVerified'] as bool? ?? false,
+              isRole: rawData['isRole'] as bool? ?? false,
+            );
+          }
+
+          final bool isVerified = userModel.isVerified ??
+              (rawData['isVerified'] as bool? ?? false);
+          final bool isApproved = rawData['isApproved'] as bool? ?? false;
+          final bool isStatusVerified = isVerified || isApproved;
 
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 20),
@@ -93,7 +109,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                                 const SizedBox(width: 5),
                                 // if virified show blue tick
-                                if (isVerified)
+                                if (isStatusVerified)
                                   const Icon(Icons.verified,
                                       color: Colors.blue, size: 18),
                               ],

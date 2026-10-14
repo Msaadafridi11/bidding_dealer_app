@@ -49,12 +49,12 @@ ItemModel _$ItemModelFromJson(Map<String, dynamic> json) => ItemModel(
       createdAt: json['createdAt'] == null
           ? null
           : DateTime.parse(json['createdAt'] as String),
-
-          currentBidUserId: json['currentBidUserId'],
-           winnerUserId: json['winnerUserId'],
-        winnerBidAmount:
-            (json['winnerBidAmount'] as num?)?.toDouble(),
-        auctionEndedAt: json['auctionEndedAt']?.toDate(),
+      currentBidUserId: json['currentBidUserId'] as String?,
+      winnerUserId: json['winnerUserId'] as String?,
+      winnerBidAmount: (json['winnerBidAmount'] as num?)?.toDouble(),
+      auctionEndedAt: json['auctionEndedAt'] == null
+          ? null
+          : DateTime.parse(json['auctionEndedAt'] as String),
     );
 
 Map<String, dynamic> _$ItemModelToJson(ItemModel instance) => <String, dynamic>{
@@ -93,9 +93,9 @@ Map<String, dynamic> _$ItemModelToJson(ItemModel instance) => <String, dynamic>{
       'interior': instance.interior,
       'specs': instance.specs,
       'createdAt': instance.createdAt?.toIso8601String(),
-      'imageUrls': instance.imageUrls,
       'currentBidUserId': instance.currentBidUserId,
       'winnerUserId': instance.winnerUserId,
-        'winnerBidAmount': instance.winnerBidAmount,
-        'auctionEndedAt': instance.auctionEndedAt,
+      'winnerBidAmount': instance.winnerBidAmount,
+      'auctionEndedAt': instance.auctionEndedAt?.toIso8601String(),
+      'imageUrls': instance.imageUrls,
     };

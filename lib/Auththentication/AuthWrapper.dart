@@ -63,7 +63,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
         }
 
         // ── LOGGED IN — check Firestore for admin approval status ─────────
-        final uid = authSnapshot.data!.uid;
+        final user = authSnapshot.data!;
+        final uid = user.uid;
         return StreamBuilder<DocumentSnapshot>(
           stream: FirebaseFirestore.instance
               .collection('userModel')
@@ -75,15 +76,33 @@ class _AuthWrapperState extends State<AuthWrapper> {
                   body: Center(child: CircularProgressIndicator()));
             }
 
-            if (userSnapshot.hasData && userSnapshot.data!.exists) {
-              final data =
-                  userSnapshot.data!.data() as Map<String, dynamic>;
-              final userModel = UserModel.fromJson(data);
-              final isVerified = userModel.isVerified ?? false;
+            if (userSnapshot.hasError) {
+              return const SomethingWentWrongScreen(
+                errorMessage: 'Error loading profile. Please try again.',
+              );
+            }
 
-              return isVerified
-                  ? const Bottemnevigatonscreen()
-                  : const Dealerwitingscreen();
+            if (userSnapshot.hasData &&
+                userSnapshot.data != null &&
+                userSnapshot.data!.exists) {
+              final rawData = userSnapshot.data!.data();
+              if (rawData is Map<String, dynamic>) {
+                UserModel? userModel;
+                try {
+                  userModel = UserModel.fromJson(rawData);
+                } catch (_) {
+                  userModel = null;
+                }
+
+                final bool isVerified = userModel?.isVerified ??
+                    (rawData['isVerified'] as bool? ?? false);
+                final bool isApproved = rawData['isApproved'] as bool? ?? false;
+                final bool canAccess = isVerified || isApproved;
+
+                return canAccess
+                    ? const Bottemnevigatonscreen()
+                    : const Dealerwitingscreen();
+              }
             }
 
             // Firestore doc missing — show recoverable error screen

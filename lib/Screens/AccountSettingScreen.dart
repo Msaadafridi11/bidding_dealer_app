@@ -36,11 +36,21 @@ class AccountController extends GetxController {
           .get();
 
       if (snap.exists && snap.data() != null) {
-        final data = UserModel.fromJson(snap.data()!);
-        nameController.text = data.name ?? '';
-        emailController.text = data.email ?? '';
-        phoneController.text = data.phoneNum?.toString() ?? '';
-        companyController.text = data.compnyName ?? '';
+        final raw = snap.data();
+        if (raw is Map<String, dynamic>) {
+          try {
+            final data = UserModel.fromJson(raw);
+            nameController.text = data.name ?? '';
+            emailController.text = data.email ?? '';
+            phoneController.text = data.phoneNum?.toString() ?? '';
+            companyController.text = data.compnyName ?? '';
+          } catch (_) {
+            nameController.text = raw['name']?.toString() ?? '';
+            emailController.text = raw['email']?.toString() ?? '';
+            phoneController.text = raw['phoneNum']?.toString() ?? '';
+            companyController.text = raw['compnyName']?.toString() ?? '';
+          }
+        }
       }
     } catch (e) {
       Get.snackbar("Error", e.toString(), snackPosition: SnackPosition.BOTTOM);

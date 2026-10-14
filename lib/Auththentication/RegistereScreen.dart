@@ -1,4 +1,4 @@
-﻿import 'package:bidding_user/Auththentication/LoginScreen.dart';
+import 'package:bidding_user/Auththentication/LoginScreen.dart';
 import 'package:bidding_user/Models/user_model.dart';
 import 'package:bidding_user/Screens/DealerWitingScreen.dart';
 import 'package:bidding_user/Widgets/CustomTextFormField.dart';
@@ -73,13 +73,17 @@ class _RegisterescreenState extends State<Registerescreen> {
         throw Exception('Account creation failed. Please try again.');
       }
 
+      final fullName =
+          '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}'
+              .trim();
       final newUser = UserModel(
-        name: ' ',
+        name: fullName.isEmpty ? 'Dealer' : fullName,
         uid: createdUser.uid,
         email: _emailController.text.trim(),
         isVerified: false,
         compnyName: _companyController.text.trim(),
         phoneNum: int.tryParse(_phoneController.text.trim()) ?? 0,
+        isRole: false,
       );
 
       await FirebaseFirestore.instance

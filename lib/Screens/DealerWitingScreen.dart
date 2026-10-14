@@ -17,28 +17,58 @@ class _DealerwitingscreenState extends State<Dealerwitingscreen> {
   // Status check karne ka function
   void checkApprovalStatus(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (user == null) {
+      if (!context.mounted) return;
+      Get.offAll(() => const Loginscreen(), routeName: '/Loginscreen');
+      return;
+    }
     String uid = user.uid;
 
-    final doc = await FirebaseFirestore.instance
-        .collection('userModel')
-        .doc(uid)
-        .get();
-    
-    if (!context.mounted || doc.data() == null) return;
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('userModel')
+          .doc(uid)
+          .get();
 
-    final userModel = UserModel.fromJson(doc.data() as Map<String, dynamic>);
+      if (!context.mounted) return;
 
-    bool isVerified = userModel.isVerified ?? false;
+      if (!doc.exists || doc.data() == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text("Profile not found. Please contact support.")),
+        );
+        return;
+      }
 
-    if (isVerified) {
-      Get.offAll(
-        () => const Bottemnevigatonscreen(),
-        routeName: '/Bottemnevigatonscreen',
-      );
-    } else {
+      final rawData = doc.data() as Map<String, dynamic>;
+      UserModel? userModel;
+      try {
+        userModel = UserModel.fromJson(rawData);
+      } catch (_) {
+        userModel = null;
+      }
+
+      final bool isVerified =
+          userModel?.isVerified ?? (rawData['isVerified'] as bool? ?? false);
+      final bool isApproved = rawData['isApproved'] as bool? ?? false;
+      final bool approved = isVerified || isApproved;
+
+      if (approved) {
+        Get.offAll(
+          () => const Bottemnevigatonscreen(),
+          routeName: '/Bottemnevigatonscreen',
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text("Still pending... Please wait for Admin approval.")),
+        );
+      }
+    } catch (e) {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Still pending... Please wait for Admin approval.")),
+        const SnackBar(
+            content: Text("Unable to check status. Please try again.")),
       );
     }
   }

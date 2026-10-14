@@ -11,6 +11,8 @@ class UserModel {
    int? phoneNum;
    String? compnyName;
    bool? isRole;
+   bool? isBlocked;
+   String? status;
   
 
   UserModel({
@@ -21,6 +23,8 @@ class UserModel {
      this.phoneNum,
      this.compnyName,
      this.isRole,
+     this.isBlocked,
+     this.status,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>

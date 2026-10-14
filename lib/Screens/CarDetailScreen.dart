@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -1066,21 +1067,29 @@ class CardetailController extends GetxController {
   var isLive = false.obs;
   var isWinner = false.obs;
   var bidController = TextEditingController();
+  StreamSubscription<DocumentSnapshot>? _itemSubscription;
 
   @override
   void onInit() {
     super.onInit();
 
-    FirebaseFirestore.instance
-        .collection('itemModel')
-        .doc(itemData.itemId)
-        .snapshots()
-        .listen((snapshot) {
-
-      if (snapshot.exists) {
+    if (itemData.itemId != null && itemData.itemId!.isNotEmpty) {
+      _itemSubscription = FirebaseFirestore.instance
+          .collection('itemModel')
+          .doc(itemData.itemId)
+          .snapshots()
+          .listen((snapshot) {
+        if (!snapshot.exists || snapshot.data() == null) {
+          if (Get.currentRoute == '/Cardetailscreen') {
+            Get.back();
+            Get.snackbar("Notice",
+                "This vehicle listing has been removed by the administrator.");
+          }
+          return;
+        }
 
         ItemModel updatedItem =
-        ItemModel.fromJson(snapshot.data() as Map<String, dynamic>);
+            ItemModel.fromJson(snapshot.data() as Map<String, dynamic>);
 
         currentBid.value = (updatedItem.currentBid ?? 0).toInt();
 
@@ -1095,72 +1104,33 @@ class CardetailController extends GetxController {
 
         /// WINNER LOGIC
         if (expired) {
-
           if (updatedItem.currentBidUserId == currentUserId) {
-
             isWinner.value = true;
 
             /// 🔥 Navigate to Winner Screen ONLY ONCE
             Future.delayed(const Duration(milliseconds: 500), () {
               if (Get.currentRoute != '/WinnerScreen') {
-                Get.to(() => WinnerScreen(itemData: updatedItem), routeName: '/WinnerScreen');
+                Get.to(() => WinnerScreen(itemData: updatedItem),
+                    routeName: '/WinnerScreen');
               }
             });
-
           } else {
             isWinner.value = false;
           }
         }
-      }
-    });
+      });
+    }
 
     currentBid.value = (itemData.currentBid ?? 0).toInt();
     bidController.text = currentBid.value.toString();
   }
 
-  // @override
-  // void onInit() {
-  //   super.onInit();
-  //
-  //   /// 🔥 REAL TIME LISTENER WITH MODEL
-  //   FirebaseFirestore.instance
-  //       .collection('itemModel')
-  //       .doc(itemData.itemId)
-  //       .snapshots()
-  //       .listen((snapshot) {
-  //
-  //     if (snapshot.exists) {
-  //
-  //       /// 🔥 Convert snapshot to your ItemModel
-  //       ItemModel updatedItem =
-  //       ItemModel.fromJson(snapshot.data() as Map<String, dynamic>);
-  //
-  //       /// Use model instead of map
-  //       currentBid.value = (updatedItem.currentBid ?? 0).toInt();
-  //
-  //       bool expired = false;
-  //       if (updatedItem.bidEndTime != null) {
-  //         expired = DateTime.now().isAfter(updatedItem.bidEndTime!);
-  //       }
-  //
-  //       isLive.value = (updatedItem.isActive ?? true) && !expired;
-  //
-  //       /// Winner check using model
-  //       if (!isLive.value &&
-  //           updatedItem.currentBidUserId ==
-  //               FirebaseAuth.instance.currentUser?.uid) {
-  //
-  //         isWinner.value = true;
-  //       }
-  //     }
-  //   }
-  //   );
-  //
-  //   /// Initial values from model
-  //   currentBid.value = (itemData.currentBid ?? 0).toInt();
-  //   bidController.text = currentBid.value.toString();
-  // }
-
+  @override
+  void onClose() {
+    _itemSubscription?.cancel();
+    bidController.dispose();
+    super.onClose();
+  }
 
   /// Add bid logic
   Future<void> placeBid(int enteredBid) async {
@@ -1192,7 +1162,9 @@ class CardetailController extends GetxController {
   }
 
   void quickBid(int amount) {
-    int newBid = (bidController.text.isEmpty ? 0 : int.parse(bidController.text)) + amount;
+    int newBid =
+        (bidController.text.isEmpty ? 0 : int.parse(bidController.text)) +
+            amount;
     bidController.text = newBid.toString();
   }
 }

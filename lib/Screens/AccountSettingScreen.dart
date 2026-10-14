@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,6 +17,7 @@ class AccountController extends GetxController {
   final companyController = TextEditingController();
 
   var isLoading = false.obs; // Loading state check
+  StreamSubscription<DocumentSnapshot>? _userDataSubscription;
 
   @override
   void onInit() {
@@ -23,39 +25,54 @@ class AccountController extends GetxController {
     fetchUserData(); // Screen khulne par data load hoga
   }
 
-  // Firestore se data lane ka function
-  Future<void> fetchUserData() async {
+  // Firestore se real-time data lane ka function
+  void fetchUserData() {
     try {
       isLoading(true);
       final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
+      if (user == null) {
+        isLoading(false);
+        return;
+      }
 
-      final snap = await FirebaseFirestore.instance
+      _userDataSubscription?.cancel();
+      _userDataSubscription = FirebaseFirestore.instance
           .collection('userModel')
           .doc(user.uid)
-          .get();
-
-      if (snap.exists && snap.data() != null) {
-        final raw = snap.data();
-        if (raw is Map<String, dynamic>) {
-          try {
-            final data = UserModel.fromJson(raw);
-            nameController.text = data.name ?? '';
-            emailController.text = data.email ?? '';
-            phoneController.text = data.phoneNum?.toString() ?? '';
-            companyController.text = data.compnyName ?? '';
-          } catch (_) {
-            nameController.text = raw['name']?.toString() ?? '';
-            emailController.text = raw['email']?.toString() ?? '';
-            phoneController.text = raw['phoneNum']?.toString() ?? '';
-            companyController.text = raw['compnyName']?.toString() ?? '';
+          .snapshots()
+          .listen((snap) {
+        isLoading(false);
+        if (snap.exists && snap.data() != null) {
+          final raw = snap.data();
+          if (raw is Map<String, dynamic>) {
+            UserModel? data;
+            try {
+              data = UserModel.fromJson(raw);
+            } catch (_) {
+              data = null;
+            }
+            nameController.text =
+                data?.name ?? raw['name']?.toString() ?? '';
+            emailController.text =
+                data?.email ?? raw['email']?.toString() ?? '';
+            phoneController.text = data?.phoneNum?.toString() ??
+                raw['phoneNum']?.toString() ??
+                '';
+            companyController.text = data?.compnyName ??
+                raw['compnyName']?.toString() ??
+                raw['companyName']?.toString() ??
+                '';
           }
         }
-      }
+      }, onError: (e) {
+        isLoading(false);
+        Get.snackbar("Error", e.toString(),
+            snackPosition: SnackPosition.BOTTOM);
+      });
     } catch (e) {
-      Get.snackbar("Error", e.toString(), snackPosition: SnackPosition.BOTTOM);
-    } finally {
       isLoading(false);
+      Get.snackbar("Error", e.toString(),
+          snackPosition: SnackPosition.BOTTOM);
     }
   }
 
@@ -66,13 +83,15 @@ class AccountController extends GetxController {
           showProgressIndicator: true, snackPosition: SnackPosition.BOTTOM);
 
       final uid = FirebaseAuth.instance.currentUser!.uid;
-      await FirebaseFirestore.instance.collection('userModel').doc(uid).update({
-        'name': nameController.text.trim(),
-        'phoneNum': phoneController.text.trim(),
-        'compnyName': companyController.text.trim(),
+      final phoneText = phoneController.text.trim();
+      final phoneParsed = int.tryParse(phoneText);
 
-        // Email usually update nahi kiya jata kyunki wo unique ID hoti hai
-      });
+      await FirebaseFirestore.instance.collection('userModel').doc(uid).set({
+        'name': nameController.text.trim(),
+        'phoneNum': phoneParsed,
+        'compnyName': companyController.text.trim(),
+        'companyName': companyController.text.trim(),
+      }, SetOptions(merge: true));
 
       Get.snackbar("Success", "Profile Updated Successfully!",
           backgroundColor: Colors.green, colorText: Colors.white);
@@ -80,6 +99,16 @@ class AccountController extends GetxController {
       Get.snackbar("Error", e.toString(),
           backgroundColor: Colors.red, colorText: Colors.white);
     }
+  }
+
+  @override
+  void onClose() {
+    _userDataSubscription?.cancel();
+    nameController.dispose();
+    emailController.dispose();
+    phoneController.dispose();
+    companyController.dispose();
+    super.onClose();
   }
 }
 

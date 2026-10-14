@@ -261,6 +261,7 @@ class MyBidsController extends GetxController {
   // Added for reactive timer
   var currentTime = DateTime.now().obs;
   Timer? _timer;
+  StreamSubscription<QuerySnapshot>? _bidsSubscription;
 
   @override
   void onInit() {
@@ -277,6 +278,7 @@ class MyBidsController extends GetxController {
   @override
   void onClose() {
     _timer?.cancel();
+    _bidsSubscription?.cancel();
     super.onClose();
   }
 
@@ -292,16 +294,18 @@ class MyBidsController extends GetxController {
     try {
       isLoading(true);
 
-      FirebaseFirestore.instance
+      _bidsSubscription?.cancel();
+      _bidsSubscription = FirebaseFirestore.instance
           .collection('itemModel')
           .where('currentBidUserId', isEqualTo: currentUser.uid)
           .snapshots()
           .listen((snapshot) {
-
         myBids.value = snapshot.docs
             .map((doc) => ItemModel.fromJson(doc.data()))
             .toList();
 
+        isLoading(false);
+      }, onError: (_) {
         isLoading(false);
       });
 

@@ -16,6 +16,8 @@ UserModel _$UserModelFromJson(Map<String, dynamic> json) => UserModel(
           : int.tryParse(json['phoneNum']?.toString() ?? ''),
       compnyName: json['compnyName'] as String?,
       isRole: (json['isRole'] as bool?) ?? false,
+      isBlocked: (json['isBlocked'] as bool?) ?? false,
+      status: json['status'] as String?,
     );
 
 Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
@@ -26,4 +28,6 @@ Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
       'phoneNum': instance.phoneNum,
       'compnyName': instance.compnyName,
       'isRole': instance.isRole,
+      'isBlocked': instance.isBlocked,
+      'status': instance.status,
     };

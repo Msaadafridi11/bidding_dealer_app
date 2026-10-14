@@ -12,6 +12,7 @@ import 'package:bidding_user/OnboardingScreens/Onboarding1.dart';
 import 'package:bidding_user/OnboardingScreens/Onboarding2.dart';
 import 'package:bidding_user/OnboardingScreens/Onboarding3.dart';
 import 'package:bidding_user/Screens/AccountSettingScreen.dart';
+import 'package:bidding_user/Screens/BlockedDealerScreen.dart';
 import 'package:bidding_user/Screens/BottemNevigatonScreen.dart';
 import 'package:bidding_user/Screens/CarDetailScreen.dart';
 import 'package:bidding_user/Screens/DealerWitingScreen.dart';
@@ -65,6 +66,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/Loginscreen', page: () => const Loginscreen()),
         GetPage(name: '/Registerescreen', page: () => const Registerescreen()),
         GetPage(name: '/Dealerwitingscreen', page: () => const Dealerwitingscreen()),
+        GetPage(name: '/BlockedDealerScreen', page: () => const BlockedDealerScreen()),
         GetPage(name: '/Bottemnevigatonscreen', page: () => const Bottemnevigatonscreen()),
         GetPage(name: '/Resetpasswordscreen', page: () => const Resetpasswordscreen()),
         GetPage(name: '/EmailSuccessScreen', page: () => const EmailSuccessScreen()),

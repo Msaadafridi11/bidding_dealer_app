@@ -6,28 +6,53 @@ part of 'item_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
+DateTime? _itemParseDateTime(dynamic val) {
+  if (val == null) return null;
+  if (val is DateTime) return val;
+  if (val is String) return DateTime.tryParse(val);
+  try {
+    return (val as dynamic).toDate();
+  } catch (_) {
+    return null;
+  }
+}
+
+double? _itemParseDouble(dynamic val) {
+  if (val == null) return null;
+  if (val is double) return val;
+  if (val is int) return val.toDouble();
+  if (val is String) return double.tryParse(val);
+  return null;
+}
+
+int? _itemParseInt(dynamic val) {
+  if (val == null) return null;
+  if (val is int) return val;
+  if (val is double) return val.toInt();
+  if (val is String) return int.tryParse(val);
+  return null;
+}
+
 ItemModel _$ItemModelFromJson(Map<String, dynamic> json) => ItemModel(
       imageUrls: (json['imageUrls'] as List<dynamic>?)
-          ?.map((e) => e as String)
+          ?.map((e) => e.toString())
           .toList(),
-      itemId: json['itemId'] as String?,
+      itemId: json['itemId']?.toString(),
       title: json['title'] as String?,
       description: json['description'] as String?,
       make: json['make'] as String?,
       model: json['model'] as String?,
-      year: (json['year'] as num?)?.toInt(),
-      sellerPrice: (json['sellerPrice'] as num?)?.toDouble(),
-      minimumBid: (json['minimumBid'] as num?)?.toDouble(),
-      currentBid: (json['currentBid'] as num?)?.toDouble(),
-      bidEndTime: json['bidEndTime'] == null
-          ? null
-          : DateTime.parse(json['bidEndTime'] as String),
-      isActive: json['isActive'] as bool?,
-      mileage: (json['mileage'] as num?)?.toInt(),
+      year: _itemParseInt(json['year']),
+      sellerPrice: _itemParseDouble(json['sellerPrice']),
+      minimumBid: _itemParseDouble(json['minimumBid']),
+      currentBid: _itemParseDouble(json['currentBid']),
+      bidEndTime: _itemParseDateTime(json['bidEndTime']),
+      isActive: (json['isActive'] as bool?) ?? true,
+      mileage: _itemParseInt(json['mileage']),
       registeredIn: json['registeredIn'] as String?,
       bodyType: json['bodyType'] as String?,
-      engineSize: json['engineSize'] as String?,
-      numberOfCylinders: (json['numberOfCylinders'] as num?)?.toInt(),
+      engineSize: json['engineSize']?.toString(),
+      numberOfCylinders: _itemParseInt(json['numberOfCylinders']),
       fuelType: json['fuelType'] as String?,
       transmission: json['transmission'] as String?,
       wheelType: json['wheelType'] as String?,
@@ -35,10 +60,10 @@ ItemModel _$ItemModelFromJson(Map<String, dynamic> json) => ItemModel(
       safetyBeltStatus: json['safetyBeltStatus'] as String?,
       trim: json['trim'] as String?,
       interiorType: json['interiorType'] as String?,
-      keys: (json['keys'] as num?)?.toInt(),
+      keys: _itemParseInt(json['keys']),
       specification: json['specification'] as String?,
       exteriorColor: json['exteriorColor'] as String?,
-      enteriorColor: json['enteriorColor'] as String?,
+      enteriorColor: (json['enteriorColor'] ?? json['interiorColor']) as String?,
       firstOwner: json['firstOwner'] as String?,
       wheels: json['wheels'] as String?,
       exteriorCondition: json['exteriorCondition'] as String?,
@@ -46,15 +71,11 @@ ItemModel _$ItemModelFromJson(Map<String, dynamic> json) => ItemModel(
       steering: json['steering'] as String?,
       interior: json['interior'] as String?,
       specs: json['specs'] as String?,
-      createdAt: json['createdAt'] == null
-          ? null
-          : DateTime.parse(json['createdAt'] as String),
+      createdAt: _itemParseDateTime(json['createdAt']),
       currentBidUserId: json['currentBidUserId'] as String?,
       winnerUserId: json['winnerUserId'] as String?,
-      winnerBidAmount: (json['winnerBidAmount'] as num?)?.toDouble(),
-      auctionEndedAt: json['auctionEndedAt'] == null
-          ? null
-          : DateTime.parse(json['auctionEndedAt'] as String),
+      winnerBidAmount: _itemParseDouble(json['winnerBidAmount']),
+      auctionEndedAt: _itemParseDateTime(json['auctionEndedAt']),
     );
 
 Map<String, dynamic> _$ItemModelToJson(ItemModel instance) => <String, dynamic>{

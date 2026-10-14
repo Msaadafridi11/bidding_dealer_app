@@ -1,5 +1,6 @@
 import 'package:bidding_user/Auththentication/LoginScreen.dart';
 import 'package:bidding_user/Models/user_model.dart';
+import 'package:bidding_user/Screens/BlockedDealerScreen.dart';
 import 'package:bidding_user/Screens/BottemNevigatonScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -48,15 +49,34 @@ class _DealerwitingscreenState extends State<Dealerwitingscreen> {
         userModel = null;
       }
 
+      final bool isBlocked = (userModel?.isBlocked ?? false) ||
+          (rawData['isBlocked'] as bool? ?? false) ||
+          (rawData['status']?.toString().toLowerCase() == 'blocked');
+
+      if (isBlocked) {
+        Get.offAll(
+          () => const BlockedDealerScreen(),
+          routeName: '/BlockedDealerScreen',
+        );
+        return;
+      }
+
       final bool isVerified =
           userModel?.isVerified ?? (rawData['isVerified'] as bool? ?? false);
       final bool isApproved = rawData['isApproved'] as bool? ?? false;
-      final bool approved = isVerified || isApproved;
+      final bool isRejected =
+          rawData['status']?.toString().toLowerCase() == 'rejected';
+      final bool approved = (isVerified || isApproved) && !isRejected;
 
       if (approved) {
         Get.offAll(
           () => const Bottemnevigatonscreen(),
           routeName: '/Bottemnevigatonscreen',
+        );
+      } else if (isRejected) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text("Your registration was rejected by the administrator.")),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

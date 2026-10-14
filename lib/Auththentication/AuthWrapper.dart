@@ -1,6 +1,7 @@
 import 'package:bidding_user/AnimationScreen/SplashScreen.dart';
 import 'package:bidding_user/Auththentication/LoginScreen.dart';
 import 'package:bidding_user/Models/user_model.dart';
+import 'package:bidding_user/Screens/BlockedDealerScreen.dart';
 import 'package:bidding_user/Screens/BottemNevigatonScreen.dart';
 import 'package:bidding_user/Screens/DealerWitingScreen.dart';
 import 'package:bidding_user/Screens/SomethingWentWrongScreen.dart';
@@ -94,10 +95,20 @@ class _AuthWrapperState extends State<AuthWrapper> {
                   userModel = null;
                 }
 
+                final bool isBlocked = (userModel?.isBlocked ?? false) ||
+                    (rawData['isBlocked'] as bool? ?? false) ||
+                    (rawData['status']?.toString().toLowerCase() == 'blocked');
+
+                if (isBlocked) {
+                  return const BlockedDealerScreen();
+                }
+
                 final bool isVerified = userModel?.isVerified ??
                     (rawData['isVerified'] as bool? ?? false);
                 final bool isApproved = rawData['isApproved'] as bool? ?? false;
-                final bool canAccess = isVerified || isApproved;
+                final bool isRejected =
+                    rawData['status']?.toString().toLowerCase() == 'rejected';
+                final bool canAccess = (isVerified || isApproved) && !isRejected;
 
                 return canAccess
                     ? const Bottemnevigatonscreen()
